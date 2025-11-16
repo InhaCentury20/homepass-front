@@ -1,46 +1,105 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
+import { getAnnouncements } from '@/lib/api/announcements';
+import type { Announcement } from '@/types/api';
 
-// 임시 데이터
-const mockAnnouncements = [
-  {
-    id: 1,
-    title: '서울 강남구 행복주택 입주자 모집',
-    housingType: '행복주택',
-    region: '서울특별시 강남구',
-    dday: 5,
-    isCustomized: true,
-    minDeposit: 5000,
-    maxDeposit: 8000,
-    monthlyRent: 30,
-    applicationEndDate: '2025-02-15',
-  },
-  {
-    id: 2,
-    title: '경기도 성남시 국민임대 주택 입주자 모집',
-    housingType: '국민임대',
-    region: '경기도 성남시',
-    dday: 12,
-    isCustomized: false,
-    minDeposit: 3000,
-    maxDeposit: 5000,
-    monthlyRent: 25,
-    applicationEndDate: '2025-02-22',
-  },
-];
+type SortOption = 'latest' | 'dday' | 'deposit' | 'rent';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedHousingType, setSelectedHousingType] = useState('');
-  const [sortBy, setSortBy] = useState('latest');
+  const [sortBy, setSortBy] = useState<SortOption>('latest');
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const regions = ['전체', '서울특별시', '경기도', '인천광역시', '부산광역시'];
-  const housingTypes = ['전체', '행복주택', '국민임대', '공공임대'];
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const response = await getAnnouncements({ size: 50 });
+        setAnnouncements(response.items);
+      } catch (err) {
+        console.error(err);
+        setError('공고 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const regions = useMemo(() => {
+    const uniqueRegions = new Set<string>();
+    announcements.forEach((announcement) => {
+      if (announcement.region) {
+        uniqueRegions.add(announcement.region.split(' ')[0] ?? announcement.region);
+      }
+    });
+    return ['전체', ...Array.from(uniqueRegions)];
+  }, [announcements]);
+
+  const housingTypes = useMemo(() => {
+    const uniqueTypes = new Set<string>();
+    announcements.forEach((announcement) => {
+      if (announcement.housing_type) {
+        uniqueTypes.add(announcement.housing_type);
+      }
+    });
+    return ['전체', ...Array.from(uniqueTypes)];
+  }, [announcements]);
+
+  const filteredAnnouncements = useMemo(() => {
+    let result = [...announcements];
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (announcement) =>
+          announcement.title.toLowerCase().includes(query) ||
+          (announcement.region?.toLowerCase().includes(query) ?? false) ||
+          (announcement.housing_type?.toLowerCase().includes(query) ?? false),
+      );
+    }
+
+    if (selectedRegion) {
+      result = result.filter((announcement) =>
+        (announcement.region ?? '').includes(selectedRegion),
+      );
+    }
+
+    if (selectedHousingType) {
+      result = result.filter(
+        (announcement) => announcement.housing_type === selectedHousingType,
+      );
+    }
+
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'dday':
+          return (a.dday ?? Infinity) - (b.dday ?? Infinity);
+        case 'deposit':
+          return (a.min_deposit ?? Infinity) - (b.min_deposit ?? Infinity);
+        case 'rent':
+          return (a.monthly_rent ?? Infinity) - (b.monthly_rent ?? Infinity);
+        case 'latest':
+        default:
+          return (
+            new Date(b.scraped_at ?? b.application_end_date ?? 0).getTime() -
+            new Date(a.scraped_at ?? a.application_end_date ?? 0).getTime()
+          );
+      }
+    });
+
+    return result;
+  }, [announcements, searchQuery, selectedRegion, selectedHousingType, sortBy]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30">
@@ -119,7 +178,7 @@ export default function Home() {
                 <div className="relative">
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
                     className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white appearance-none cursor-pointer transition-all min-w-[130px]"
                   >
                     <option value="latest">최신순</option>
@@ -154,105 +213,123 @@ export default function Home() {
           </div>
         </Card>
 
+        {/* 로딩 / 에러 상태 */}
+        {loading && (
+          <div className="py-16 text-center text-gray-500 animate-pulse">
+            공고를 불러오는 중입니다...
+          </div>
+        )}
+        {error && (
+          <Card className="mb-6 border-red-200 bg-red-50 text-red-700">
+            <div className="p-6 text-center font-medium">{error}</div>
+          </Card>
+        )}
+
         {/* 공고 카드 리스트 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockAnnouncements.map((announcement, idx) => (
-            <Link 
-              key={announcement.id} 
-              href={`/announcements/${announcement.id}`}
-              className="animate-fade-in"
-              style={{ animationDelay: `${(idx + 1) * 0.1}s` }}
-            >
-              <Card hover gradient className="h-full overflow-hidden">
-                {/* 그라데이션 상단 바 */}
-                {announcement.isCustomized && (
-                  <div className="h-1.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400"></div>
-                )}
-                
-                <div className="p-6">
-                  {/* 헤더 */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex flex-wrap gap-2">
-                      {announcement.isCustomized && (
-                        <Badge variant="success" icon="⭐">
-                          맞춤
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredAnnouncements.map((announcement, idx) => (
+              <Link
+                key={announcement.announcement_id}
+                href={`/announcements/${announcement.announcement_id}`}
+                className="animate-fade-in"
+                style={{ animationDelay: `${(idx + 1) * 0.05}s` }}
+              >
+                <Card hover gradient className="h-full overflow-hidden">
+                  {announcement.is_customized && (
+                    <div className="h-1.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400"></div>
+                  )}
+
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex flex-wrap gap-2">
+                        {announcement.is_customized && (
+                          <Badge variant="success" icon="⭐">
+                            맞춤
+                          </Badge>
+                        )}
+                        {announcement.dday !== undefined && (
+                          <Badge variant="danger" icon="⏰">
+                            D-{announcement.dday}
+                          </Badge>
+                        )}
+                      </div>
+                      {announcement.housing_type && (
+                        <Badge variant="info" icon="🏠">
+                          {announcement.housing_type}
                         </Badge>
                       )}
-                      <Badge variant="danger" icon="⏰">
-                        D-{announcement.dday}
-                      </Badge>
                     </div>
-                    <Badge variant="info" icon="🏠">
-                      {announcement.housingType}
-                    </Badge>
-                  </div>
 
-                  {/* 제목 */}
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 hover:text-blue-600 transition-colors">
-                    {announcement.title}
-                  </h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 hover:text-blue-600 transition-colors">
+                      {announcement.title}
+                    </h3>
 
-                  {/* 지역 */}
-                  <div className="flex items-center gap-1.5 mb-5 text-sm text-gray-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    {announcement.region}
-                  </div>
-
-                  {/* 금액 정보 */}
-                  <div className="space-y-3 mb-5 p-4 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-xl border border-blue-100/50">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 flex items-center gap-1">
-                        💰 보증금
-                      </span>
-                      <span className="font-bold text-gray-900 text-sm">
-                        {announcement.minDeposit.toLocaleString()}만원 ~ {announcement.maxDeposit.toLocaleString()}만원
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600 flex items-center gap-1">
-                        💵 월 임대료
-                      </span>
-                      <span className="font-bold text-gray-900 text-sm">
-                        {announcement.monthlyRent.toLocaleString()}만원
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 마감일 */}
-                  <div className="pt-4 border-t border-gray-200 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <div className="flex items-center gap-1.5 mb-5 text-sm text-gray-600">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      <p className="text-xs text-gray-500">
-                        마감일: {announcement.applicationEndDate}
-                      </p>
+                      {announcement.region ?? '지역 정보 없음'}
                     </div>
-                    <span className="text-blue-600 text-xs font-semibold flex items-center gap-1">
-                      자세히 보기
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
 
-        {/* 무한 스크롤 영역 */}
-        <div className="mt-12 text-center animate-pulse">
-          <div className="inline-flex items-center gap-2 text-gray-500 text-sm">
-            <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            더 많은 공고를 불러오는 중...
+                    <div className="space-y-3 mb-5 p-4 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-xl border border-blue-100/50">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 flex items-center gap-1">
+                          💰 보증금
+                        </span>
+                        <span className="font-bold text-gray-900 text-sm">
+                          {announcement.min_deposit !== undefined
+                            ? `${announcement.min_deposit.toLocaleString()}만원`
+                            : '정보 없음'}
+                          {' ~ '}
+                          {announcement.max_deposit !== undefined
+                            ? `${announcement.max_deposit.toLocaleString()}만원`
+                            : '정보 없음'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 flex items-center gap-1">
+                          💵 월 임대료
+                        </span>
+                        <span className="font-bold text-gray-900 text-sm">
+                          {announcement.monthly_rent !== undefined
+                            ? `${announcement.monthly_rent.toLocaleString()}만원`
+                            : '정보 없음'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-xs text-gray-500">
+                          마감일: {announcement.application_end_date?.slice(0, 10) ?? '미정'}
+                        </p>
+                      </div>
+                      <span className="text-blue-600 text-xs font-semibold flex items-center gap-1">
+                        자세히 보기
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            ))}
           </div>
-        </div>
+        )}
+
+        {!loading && !error && filteredAnnouncements.length === 0 && (
+          <Card className="mt-12">
+            <div className="p-12 text-center text-gray-500">
+              조건에 맞는 공고가 없습니다.
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );

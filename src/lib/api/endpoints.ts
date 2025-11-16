@@ -4,6 +4,7 @@ export const API_ENDPOINTS = {
   // 사용자 관련
   USERS: {
     ME: '/api/v1/users/me',
+    PERSONAL_INFO: '/api/v1/users/me/personal-info',
     SUBSCRIPTION_INFO: '/api/v1/users/me/subscription-info',
     PREFERENCES: '/api/v1/users/me/preferences',
     AUTO_APPLY_MODE: '/api/v1/users/me/auto-apply-mode',

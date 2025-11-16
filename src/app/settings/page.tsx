@@ -1,480 +1,791 @@
 'use client';
 
-import { useState } from 'react';
+import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from 'react';
+import axios from 'axios';
 import Card from '@/components/common/Card';
+import {
+  fetchUserProfile,
+  updateNotificationSettings,
+  updatePersonalInfo,
+  updatePreferences,
+  updateSubscriptionInfo,
+} from '@/lib/api/users';
+import type {
+  NotificationSettingPayload,
+  Preference,
+  PreferencePayload,
+  SubscriptionInfo,
+  SubscriptionInfoPayload,
+  User,
+  UserProfileResponse,
+} from '@/types/api';
 
-type TabType = 'personal' | 'subscription' | 'preferences' | 'auto-apply' | 'notifications';
+interface PersonalFormState {
+  email: string;
+  password: string;
+  name: string;
+  phone_number: string;
+  address: string;
+}
+
+interface SubscriptionFormState {
+  bank_name: string;
+  join_date: string;
+  is_household_head: string;
+  payment_count: string;
+  total_payment_amount: string;
+  income_level_percent: string;
+}
+
+interface PreferenceFormState {
+  locationsText: string;
+  housingTypesText: string;
+  min_area: string;
+  max_area: string;
+  max_deposit: string;
+  max_monthly_rent: string;
+  commute_base_address: string;
+  max_commute_time_minutes: string;
+  auto_apply_mode: Preference['auto_apply_mode'];
+}
+
+interface NotificationFormState {
+  new_announcement: boolean;
+  auto_apply_complete: boolean;
+  dday: boolean;
+  result: boolean;
+}
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('personal');
+  const [user, setUser] = useState<User | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState('');
 
-  const tabs = [
-    { id: 'personal' as TabType, label: '개인 정보', icon: '👤' },
-    { id: 'subscription' as TabType, label: '청약 정보', icon: '🏦' },
-    { id: 'preferences' as TabType, label: '희망 조건', icon: '⭐' },
-    { id: 'auto-apply' as TabType, label: '자동 신청', icon: '🤖' },
-    { id: 'notifications' as TabType, label: '알림 설정', icon: '🔔' },
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-8 animate-fade-in">
-          설정
-        </h1>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* 사이드바 */}
-          <div className="lg:col-span-1">
-            <Card gradient className="shadow-lg sticky top-24 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-              <nav className="p-4 space-y-2">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`
-                      w-full text-left px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center gap-3
-                      ${activeTab === tab.id
-                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-105'
-                        : 'text-gray-700 hover:bg-gray-100 hover:scale-102'
-                      }
-                    `}
-                  >
-                    <span className="text-xl">{tab.icon}</span>
-                    {tab.label}
-                  </button>
-                ))}
-              </nav>
-            </Card>
-          </div>
-
-          {/* 컨텐츠 */}
-          <div className="lg:col-span-3">
-            {activeTab === 'personal' && <PersonalInfoTab />}
-            {activeTab === 'subscription' && <SubscriptionInfoTab />}
-            {activeTab === 'preferences' && <PreferencesTab />}
-            {activeTab === 'auto-apply' && <AutoApplyTab />}
-            {activeTab === 'notifications' && <NotificationsTab />}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 개인 정보 탭
-function PersonalInfoTab() {
-  return (
-    <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.2s' }}>
-      <div className="p-8">
-        <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-          <span>👤</span> 개인 정보
-        </h2>
-        <p className="text-gray-600 mb-8">개인 신상 정보를 관리하세요</p>
-        
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                이름
-              </label>
-              <input
-                type="text"
-                defaultValue="홍길동"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                생년월일
-              </label>
-              <input
-                type="date"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                핸드폰 번호
-              </label>
-              <input
-                type="tel"
-                defaultValue="010-1234-5678"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                현재 거주 지역
-              </label>
-              <input
-                type="text"
-                placeholder="예: 서울특별시 강남구"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                월 평균 소득
-              </label>
-              <input
-                type="number"
-                placeholder="만원 단위"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-          </div>
-          
-          <div className="flex flex-wrap gap-6 p-6 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-xl border border-blue-100">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-              <span className="text-gray-700 font-medium">1인 가구</span>
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-              <span className="text-gray-700 font-medium">배우자 여부</span>
-            </label>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              자가/자차 소유 여부 및 금액
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="자가 소유 여부"
-                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-              <input
-                type="number"
-                placeholder="금액 (만원)"
-                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-          </div>
-          
-          <button className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200">
-            💾 저장하기
-          </button>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// 청약 정보 탭
-function SubscriptionInfoTab() {
-  return (
-    <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.2s' }}>
-      <div className="p-8">
-        <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-          <span>🏦</span> 청약 정보
-        </h2>
-        <p className="text-gray-600 mb-8">청약 통장 정보를 입력하세요</p>
-        
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              청약 통장 가입 은행
-            </label>
-            <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all bg-white">
-              <option>은행 선택</option>
-              <option>KB국민은행</option>
-              <option>신한은행</option>
-              <option>하나은행</option>
-            </select>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                청약 통장 가입일
-              </label>
-              <input
-                type="date"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                세대주 여부
-              </label>
-              <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all bg-white">
-                <option>예</option>
-                <option>아니오</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                납입 인정 횟수
-              </label>
-              <input
-                type="number"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                총 납입 인정 금액
-              </label>
-              <input
-                type="number"
-                placeholder="만원 단위"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-          </div>
-          
-          <button className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200">
-            💾 저장하기
-          </button>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// 희망 조건 탭
-function PreferencesTab() {
-  return (
-    <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.2s' }}>
-      <div className="p-8">
-        <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-          <span>⭐</span> 희망 조건
-        </h2>
-        <p className="text-gray-600 mb-8">원하는 청약 조건을 설정하세요</p>
-        
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              희망 지역
-            </label>
-            <input
-              type="text"
-              placeholder="예: 서울특별시 강남구, 경기도 성남시"
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              희망 주택 유형
-            </label>
-            <div className="flex flex-wrap gap-3 p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-xl border border-blue-100">
-              {['행복주택', '국민임대', '공공임대'].map((type) => (
-                <label key={type} className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-white rounded-lg border-2 border-gray-200 hover:border-blue-300 transition-all">
-                  <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                  <span className="text-gray-700 font-medium">{type}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                최소 평형 (m²)
-              </label>
-              <input
-                type="number"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                최대 평형 (m²)
-              </label>
-              <input
-                type="number"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                최대 보증금 (만원)
-              </label>
-              <input
-                type="number"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                최대 월 임대료 (만원)
-              </label>
-              <input
-                type="number"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                출퇴근 기준 주소
-              </label>
-              <input
-                type="text"
-                placeholder="예: 서울특별시 강남구"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                최대 출퇴근 소요 시간 (분)
-              </label>
-              <input
-                type="number"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
-              />
-            </div>
-          </div>
-          
-          <button className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200">
-            💾 저장하기
-          </button>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// 자동 신청 탭
-function AutoApplyTab() {
-  const [mode, setMode] = useState<'full_auto' | 'approval' | 'disabled'>('disabled');
-
-  const modes = [
-    {
-      id: 'full_auto' as const,
-      title: '완전 자동',
-      description: '조건에 맞는 공고가 올라오면 자동으로 신청합니다.',
-      icon: '🤖',
-      gradient: 'from-emerald-500 to-teal-600',
-    },
-    {
-      id: 'approval' as const,
-      title: '알림 후 승인',
-      description: '조건에 맞는 공고 발견 시 알림을 보내고, 승인 시 신청합니다.',
-      icon: '🔔',
-      gradient: 'from-blue-500 to-indigo-600',
-    },
-    {
-      id: 'disabled' as const,
-      title: '비활성화',
-      description: '자동 신청을 사용하지 않습니다.',
-      icon: '❌',
-      gradient: 'from-gray-400 to-gray-500',
-    },
-  ];
-
-  return (
-    <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.2s' }}>
-      <div className="p-8">
-        <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-          <span>🤖</span> 자동 신청 모드
-        </h2>
-        <p className="text-gray-600 mb-8">원하는 자동 신청 방식을 선택하세요</p>
-        
-        <div className="space-y-4">
-          {modes.map((modeOption) => (
-            <label
-              key={modeOption.id}
-              className={`
-                flex items-start gap-4 p-6 rounded-xl border-2 cursor-pointer transition-all duration-200
-                ${mode === modeOption.id
-                  ? `bg-gradient-to-r ${modeOption.gradient} text-white border-transparent shadow-lg scale-105`
-                  : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md'
-                }
-              `}
-            >
-              <input
-                type="radio"
-                name="auto-apply-mode"
-                value={modeOption.id}
-                checked={mode === modeOption.id}
-                onChange={() => setMode(modeOption.id)}
-                className="mt-1 w-5 h-5"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xl">{modeOption.icon}</span>
-                  <div className={`font-bold text-lg ${mode === modeOption.id ? 'text-white' : 'text-gray-900'}`}>
-                    {modeOption.title}
-                  </div>
-                </div>
-                <div className={`text-sm ${mode === modeOption.id ? 'text-white/90' : 'text-gray-500'}`}>
-                  {modeOption.description}
-                </div>
-              </div>
-            </label>
-          ))}
-          
-          <button className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 mt-6">
-            💾 저장하기
-          </button>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-// 알림 설정 탭
-function NotificationsTab() {
-  const [settings, setSettings] = useState({
-    newAnnouncement: true,
-    autoApplyComplete: true,
+  const [personalForm, setPersonalForm] = useState<PersonalFormState>({
+    email: '',
+    password: '',
+    name: '',
+    phone_number: '',
+    address: '',
+  });
+  const [subscriptionForm, setSubscriptionForm] = useState<SubscriptionFormState>({
+    bank_name: '',
+    join_date: '',
+    is_household_head: '',
+    payment_count: '',
+    total_payment_amount: '',
+    income_level_percent: '',
+  });
+  const [preferenceForm, setPreferenceForm] = useState<PreferenceFormState>({
+    locationsText: '',
+    housingTypesText: '',
+    min_area: '',
+    max_area: '',
+    max_deposit: '',
+    max_monthly_rent: '',
+    commute_base_address: '',
+    max_commute_time_minutes: '',
+    auto_apply_mode: 'disabled',
+  });
+  const [notificationForm, setNotificationForm] = useState<NotificationFormState>({
+    new_announcement: true,
+    auto_apply_complete: true,
     dday: true,
     result: true,
   });
 
-  const toggleSetting = (key: keyof typeof settings) => {
-    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+  const [personalStatus, setPersonalStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(
+    null,
+  );
+  const [preferenceStatus, setPreferenceStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [notificationStatus, setNotificationStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(
+    null,
+  );
+
+  const resetStatusMessages = () => {
+    setPersonalStatus(null);
+    setSubscriptionStatus(null);
+    setPreferenceStatus(null);
+    setNotificationStatus(null);
   };
 
-  const notificationItems = [
-    { key: 'newAnnouncement' as const, label: '새로운 공고 알림', icon: '📢', color: 'blue' },
-    { key: 'autoApplyComplete' as const, label: '자동 신청 완료 알림', icon: '✅', color: 'green' },
-    { key: 'dday' as const, label: 'D-day 알림', icon: '⏰', color: 'orange' },
-    { key: 'result' as const, label: '경쟁률 및 결과 알림', icon: '📊', color: 'purple' },
-  ];
+  const populateForms = useCallback((profile: UserProfileResponse) => {
+    setUser(profile.user);
+    setPersonalForm({
+      email: profile.user.email,
+      password: '',
+      name: profile.user.name ?? '',
+      phone_number: profile.user.phone_number ?? '',
+      address: profile.user.address ?? '',
+    });
+
+    const subscription: SubscriptionInfo | undefined = profile.subscription;
+    setSubscriptionForm({
+      bank_name: subscription?.bank_name ?? '',
+      join_date: subscription?.join_date ? subscription.join_date.slice(0, 10) : '',
+      is_household_head:
+        subscription?.is_household_head === undefined || subscription.is_household_head === null
+          ? ''
+          : subscription.is_household_head
+            ? 'yes'
+            : 'no',
+      payment_count: subscription?.payment_count !== undefined && subscription.payment_count !== null
+        ? String(subscription.payment_count)
+        : '',
+      total_payment_amount:
+        subscription?.total_payment_amount !== undefined && subscription.total_payment_amount !== null
+          ? String(subscription.total_payment_amount)
+          : '',
+      income_level_percent:
+        subscription?.income_level_percent !== undefined && subscription.income_level_percent !== null
+          ? String(subscription.income_level_percent)
+          : '',
+    });
+
+    const preference: Preference | undefined = profile.preference;
+    setPreferenceForm({
+      locationsText: preference?.locations?.join(', ') ?? '',
+      housingTypesText: preference?.housing_types?.join(', ') ?? '',
+      min_area: preference?.min_area !== undefined && preference?.min_area !== null ? String(preference.min_area) : '',
+      max_area: preference?.max_area !== undefined && preference?.max_area !== null ? String(preference.max_area) : '',
+      max_deposit:
+        preference?.max_deposit !== undefined && preference?.max_deposit !== null
+          ? String(preference.max_deposit)
+          : '',
+      max_monthly_rent:
+        preference?.max_monthly_rent !== undefined && preference?.max_monthly_rent !== null
+          ? String(preference.max_monthly_rent)
+          : '',
+      commute_base_address: preference?.commute_base_address ?? '',
+      max_commute_time_minutes:
+        preference?.max_commute_time_minutes !== undefined && preference?.max_commute_time_minutes !== null
+          ? String(preference.max_commute_time_minutes)
+          : '',
+      auto_apply_mode: preference?.auto_apply_mode ?? 'disabled',
+    });
+
+    setNotificationForm({
+      new_announcement: profile.notification?.new_announcement ?? true,
+      auto_apply_complete: profile.notification?.auto_apply_complete ?? true,
+      dday: profile.notification?.dday ?? true,
+      result: profile.notification?.result ?? true,
+    });
+  }, []);
+
+  const loadProfile = useCallback(async () => {
+    setProfileLoading(true);
+    setProfileError('');
+    try {
+      const profile = await fetchUserProfile();
+      populateForms(profile);
+    } catch (error) {
+      console.error(error);
+      setProfileError('사용자 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setProfileLoading(false);
+    }
+  }, [populateForms]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  const handlePersonalSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    resetStatusMessages();
+    try {
+      const payload = {
+        email: personalForm.email.trim() || undefined,
+        password: personalForm.password ? personalForm.password : undefined,
+        name: personalForm.name.trim() || undefined,
+        phone_number: personalForm.phone_number.trim() || '',
+        address: personalForm.address.trim() || '',
+      };
+      if (!payload.email) {
+        delete payload.email;
+      }
+      const response = await updatePersonalInfo(payload);
+      setUser(response.data);
+      setPersonalForm((prev) => ({ ...prev, password: '', email: response.data.email }));
+      setPersonalStatus({ type: 'success', message: response.message ?? '개인 정보를 저장했습니다.' });
+      await loadProfile();
+    } catch (error) {
+      let message = '개인 정보 저장 중 오류가 발생했습니다.';
+      if (axios.isAxiosError(error)) {
+        message =
+          (error.response?.data?.detail as string) ||
+          (error.response?.data?.message as string) ||
+          error.message ||
+          message;
+      }
+      setPersonalStatus({ type: 'error', message });
+    }
+  };
+
+  const handleSubscriptionSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    resetStatusMessages();
+    const payload: SubscriptionInfoPayload = {
+      bank_name: subscriptionForm.bank_name.trim() || undefined,
+      join_date: subscriptionForm.join_date || undefined,
+      payment_count: subscriptionForm.payment_count ? Number(subscriptionForm.payment_count) : undefined,
+      total_payment_amount: subscriptionForm.total_payment_amount
+        ? Number(subscriptionForm.total_payment_amount)
+        : undefined,
+      is_household_head:
+        subscriptionForm.is_household_head === ''
+          ? undefined
+          : subscriptionForm.is_household_head === 'yes',
+      income_level_percent: subscriptionForm.income_level_percent
+        ? Number(subscriptionForm.income_level_percent)
+        : undefined,
+    };
+    try {
+      const updated = await updateSubscriptionInfo(payload);
+      setSubscriptionStatus({ type: 'success', message: '청약 정보를 저장했습니다.' });
+      setSubscriptionForm((prev) => ({
+        ...prev,
+        bank_name: updated.bank_name ?? '',
+      }));
+      await loadProfile();
+    } catch (error) {
+      let message = '청약 정보 저장 중 오류가 발생했습니다.';
+      if (axios.isAxiosError(error)) {
+        message =
+          (error.response?.data?.detail as string) ||
+          (error.response?.data?.message as string) ||
+          error.message ||
+          message;
+      }
+      setSubscriptionStatus({ type: 'error', message });
+    }
+  };
+
+  const handlePreferenceSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    resetStatusMessages();
+    const payload: PreferencePayload = {
+      locations: preferenceForm.locationsText
+        ? preferenceForm.locationsText.split(',').map((loc) => loc.trim()).filter(Boolean)
+        : undefined,
+      housing_types: preferenceForm.housingTypesText
+        ? preferenceForm.housingTypesText.split(',').map((type) => type.trim()).filter(Boolean)
+        : undefined,
+      min_area: preferenceForm.min_area ? Number(preferenceForm.min_area) : undefined,
+      max_area: preferenceForm.max_area ? Number(preferenceForm.max_area) : undefined,
+      max_deposit: preferenceForm.max_deposit ? Number(preferenceForm.max_deposit) : undefined,
+      max_monthly_rent: preferenceForm.max_monthly_rent ? Number(preferenceForm.max_monthly_rent) : undefined,
+      commute_base_address: preferenceForm.commute_base_address.trim() || undefined,
+      max_commute_time_minutes: preferenceForm.max_commute_time_minutes
+        ? Number(preferenceForm.max_commute_time_minutes)
+        : undefined,
+      auto_apply_mode: preferenceForm.auto_apply_mode ?? undefined,
+    };
+
+    try {
+      await updatePreferences(payload);
+      setPreferenceStatus({ type: 'success', message: '희망 조건 및 자동 신청 설정을 저장했습니다.' });
+      await loadProfile();
+    } catch (error) {
+      let message = '희망 조건 저장 중 오류가 발생했습니다.';
+      if (axios.isAxiosError(error)) {
+        message =
+          (error.response?.data?.detail as string) ||
+          (error.response?.data?.message as string) ||
+          error.message ||
+          message;
+      }
+      setPreferenceStatus({ type: 'error', message });
+    }
+  };
+
+  const handleNotificationSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    resetStatusMessages();
+    const payload: NotificationSettingPayload = {
+      new_announcement: notificationForm.new_announcement,
+      auto_apply_complete: notificationForm.auto_apply_complete,
+      dday: notificationForm.dday,
+      result: notificationForm.result,
+    };
+    try {
+      await updateNotificationSettings(payload);
+      setNotificationStatus({ type: 'success', message: '알림 설정을 저장했습니다.' });
+      await loadProfile();
+    } catch (error) {
+      let message = '알림 설정 저장 중 오류가 발생했습니다.';
+      if (axios.isAxiosError(error)) {
+        message =
+          (error.response?.data?.detail as string) ||
+          (error.response?.data?.message as string) ||
+          error.message ||
+          message;
+      }
+      setNotificationStatus({ type: 'error', message });
+    }
+  };
+
+  const handlePersonalInputChange =
+    (field: keyof PersonalFormState) => (event: ChangeEvent<HTMLInputElement>) => {
+      setPersonalForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
+
+  const handleSubscriptionInputChange =
+    (field: keyof SubscriptionFormState) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      setSubscriptionForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
+
+  const handlePreferenceInputChange =
+    (field: keyof PreferenceFormState) => (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      setPreferenceForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
+
+  const handleNotificationToggle =
+    (field: keyof NotificationFormState) => (event: ChangeEvent<HTMLInputElement>) => {
+      setNotificationForm((prev) => ({ ...prev, [field]: event.target.checked }));
+    };
+
+  const isAuthenticated = Boolean(user);
 
   return (
-    <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.2s' }}>
-      <div className="p-8">
-        <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-          <span>🔔</span> 알림 설정
-        </h2>
-        <p className="text-gray-600 mb-8">받고 싶은 알림을 선택하세요</p>
-        
-        <div className="space-y-4">
-          {notificationItems.map((item) => (
-            <div
-              key={item.key}
-              className="flex items-center justify-between p-6 bg-white rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-200"
-            >
-              <div className="flex items-center gap-4">
-                <span className="text-3xl">{item.icon}</span>
-                <span className="text-gray-900 font-semibold text-lg">{item.label}</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings[item.key]}
-                  onChange={() => toggleSetting(item.key)}
-                  className="sr-only peer"
-                />
-                <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-indigo-600"></div>
-              </label>
-            </div>
-          ))}
-          
-          <button className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 mt-6">
-            💾 저장하기
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between gap-4 mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent animate-fade-in">
+            설정
+          </h1>
+          <button
+            onClick={loadProfile}
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold shadow hover:from-blue-600 hover:to-indigo-700 transition-all disabled:opacity-60"
+            disabled={profileLoading}
+          >
+            새로 고침
           </button>
         </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-1 space-y-6">
+            <Card gradient className="shadow-lg animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <div className="p-6 space-y-4">
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                  <span>👤</span> 프로필 요약
+                </h2>
+                {user ? (
+                  <div className="space-y-2 text-sm text-gray-700">
+                    <p><span className="font-semibold">이름:</span> {user.name}</p>
+                    <p><span className="font-semibold">이메일:</span> {user.email}</p>
+                    <p><span className="font-semibold">전화번호:</span> {user.phone_number ?? '미등록'}</p>
+                    <p><span className="font-semibold">주소:</span> {user.address ?? '미등록'}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">사용자 정보를 불러오는 중입니다.</p>
+                )}
+                {profileError && (
+                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                    {profileError}
+                  </p>
+                )}
+                <button
+                  onClick={loadProfile}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all disabled:opacity-60"
+                  disabled={profileLoading}
+                >
+                  프로필 새로고침
+                </button>
+              </div>
+            </Card>
+
+            <Card gradient className="shadow-lg animate-fade-in" style={{ animationDelay: '0.15s' }}>
+              <div className="p-6 space-y-2 text-sm text-gray-600">
+                <p>• 각 섹션에서 개인정보, 청약 정보, 희망 조건, 알림 설정을 수정하면 바로 저장됩니다.</p>
+                <p>• 저장 완료 후에는 자동으로 최신 정보를 다시 불러옵니다.</p>
+                <p>• 이미지 URL 등 공고 관련 리소스는 S3 주소를 MySQL에 저장하여 제공합니다.</p>
+              </div>
+            </Card>
+          </div>
+
+          <div className="lg:col-span-3">
+            {!isAuthenticated ? (
+              <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <div className="p-10 text-center space-y-4">
+                  <h2 className="text-2xl font-semibold text-gray-900">사용자 정보를 불러오는 중입니다</h2>
+                  <p className="text-gray-600">잠시만 기다려주세요.</p>
+                </div>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                  <form onSubmit={handlePersonalSubmit} className="p-8 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold mb-1 flex items-center gap-3">
+                          <span>👤</span> 개인 정보
+                        </h2>
+                        <p className="text-sm text-gray-500">이메일을 변경하면 이후 로그인할 때 새 이메일을 사용하세요.</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">이메일</label>
+                        <input
+                          type="email"
+                          value={personalForm.email}
+                          onChange={handlePersonalInputChange('email')}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">비밀번호 변경</label>
+                        <input
+                          type="password"
+                          value={personalForm.password}
+                          placeholder="변경 시에만 입력하세요"
+                          onChange={handlePersonalInputChange('password')}
+                          minLength={8}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">이름</label>
+                        <input
+                          type="text"
+                          value={personalForm.name}
+                          onChange={handlePersonalInputChange('name')}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">전화번호</label>
+                        <input
+                          type="tel"
+                          value={personalForm.phone_number}
+                          onChange={handlePersonalInputChange('phone_number')}
+                          placeholder="010-0000-0000"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">주소</label>
+                        <input
+                          type="text"
+                          value={personalForm.address}
+                          onChange={handlePersonalInputChange('address')}
+                          placeholder="예: 서울특별시 중구 세종대로 110"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                    </div>
+                    {personalStatus && (
+                      <p
+                        className={`rounded-xl border px-4 py-3 text-sm ${
+                          personalStatus.type === 'error'
+                            ? 'border-red-200 bg-red-50 text-red-700'
+                            : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        }`}
+                      >
+                        {personalStatus.message}
+                      </p>
+                    )}
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+                      >
+                        저장하기
+                      </button>
+                    </div>
+                  </form>
+                </Card>
+
+                <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.25s' }}>
+                  <form onSubmit={handleSubscriptionSubmit} className="p-8 space-y-6">
+                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+                      <span>🏦</span> 청약 정보
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">가입 은행</label>
+                        <input
+                          type="text"
+                          value={subscriptionForm.bank_name}
+                          onChange={handleSubscriptionInputChange('bank_name')}
+                          placeholder="예: KB국민은행"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">가입일</label>
+                        <input
+                          type="date"
+                          value={subscriptionForm.join_date}
+                          onChange={handleSubscriptionInputChange('join_date')}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">세대주 여부</label>
+                        <select
+                          value={subscriptionForm.is_household_head}
+                          onChange={handleSubscriptionInputChange('is_household_head')}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all bg-white"
+                        >
+                          <option value="">선택하세요</option>
+                          <option value="yes">예</option>
+                          <option value="no">아니오</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">납입 인정 횟수</label>
+                        <input
+                          type="number"
+                          value={subscriptionForm.payment_count}
+                          onChange={handleSubscriptionInputChange('payment_count')}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">총 납입 금액 (원)</label>
+                        <input
+                          type="number"
+                          value={subscriptionForm.total_payment_amount}
+                          onChange={handleSubscriptionInputChange('total_payment_amount')}
+                          placeholder="예: 2400000"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">소득 분위(%)</label>
+                        <input
+                          type="number"
+                          value={subscriptionForm.income_level_percent}
+                          onChange={handleSubscriptionInputChange('income_level_percent')}
+                          placeholder="예: 80"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                    </div>
+                    {subscriptionStatus && (
+                      <p
+                        className={`rounded-xl border px-4 py-3 text-sm ${
+                          subscriptionStatus.type === 'error'
+                            ? 'border-red-200 bg-red-50 text-red-700'
+                            : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        }`}
+                      >
+                        {subscriptionStatus.message}
+                      </p>
+                    )}
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+                      >
+                        저장하기
+                      </button>
+                    </div>
+                  </form>
+                </Card>
+
+                <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                  <form onSubmit={handlePreferenceSubmit} className="p-8 space-y-6">
+                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+                      <span>⭐</span> 희망 조건 및 자동 신청
+                    </h2>
+                    <div className="space-y-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          희망 지역 (쉼표로 구분)
+                        </label>
+                        <input
+                          type="text"
+                          value={preferenceForm.locationsText}
+                          onChange={handlePreferenceInputChange('locationsText')}
+                          placeholder="예: 서울특별시 강남구, 경기도 성남시"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          희망 주택 유형 (쉼표로 구분)
+                        </label>
+                        <input
+                          type="text"
+                          value={preferenceForm.housingTypesText}
+                          onChange={handlePreferenceInputChange('housingTypesText')}
+                          placeholder="예: 행복주택, 공공임대"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">최소 면적 (m²)</label>
+                          <input
+                            type="number"
+                            value={preferenceForm.min_area}
+                            onChange={handlePreferenceInputChange('min_area')}
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">최대 면적 (m²)</label>
+                          <input
+                            type="number"
+                            value={preferenceForm.max_area}
+                            onChange={handlePreferenceInputChange('max_area')}
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">최대 보증금 (원)</label>
+                          <input
+                            type="number"
+                            value={preferenceForm.max_deposit}
+                            onChange={handlePreferenceInputChange('max_deposit')}
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">최대 월 임대료 (만원)</label>
+                          <input
+                            type="number"
+                            value={preferenceForm.max_monthly_rent}
+                            onChange={handlePreferenceInputChange('max_monthly_rent')}
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">출퇴근 기준 주소</label>
+                          <input
+                            type="text"
+                            value={preferenceForm.commute_base_address}
+                            onChange={handlePreferenceInputChange('commute_base_address')}
+                            placeholder="예: 서울특별시 강남구"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            최대 출퇴근 시간 (분)
+                          </label>
+                          <input
+                            type="number"
+                            value={preferenceForm.max_commute_time_minutes}
+                            onChange={handlePreferenceInputChange('max_commute_time_minutes')}
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">자동 신청 모드</label>
+                        <div className="flex flex-wrap gap-3">
+                          {[
+                            { id: 'full_auto', label: '완전 자동', icon: '🤖' },
+                            { id: 'approval', label: '알림 후 승인', icon: '🔔' },
+                            { id: 'disabled', label: '비활성화', icon: '⏸️' },
+                          ].map((mode) => (
+                            <label
+                              key={mode.id}
+                              className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 cursor-pointer transition-all ${
+                                preferenceForm.auto_apply_mode === mode.id
+                                  ? 'border-blue-500 bg-blue-50 text-blue-600'
+                                  : 'border-gray-200 hover:border-blue-300'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name="auto-apply-mode"
+                                value={mode.id}
+                                checked={preferenceForm.auto_apply_mode === mode.id}
+                                onChange={handlePreferenceInputChange('auto_apply_mode')}
+                                className="hidden"
+                              />
+                              <span>{mode.icon}</span>
+                              <span className="font-medium">{mode.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    {preferenceStatus && (
+                      <p
+                        className={`rounded-xl border px-4 py-3 text-sm ${
+                          preferenceStatus.type === 'error'
+                            ? 'border-red-200 bg-red-50 text-red-700'
+                            : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        }`}
+                      >
+                        {preferenceStatus.message}
+                      </p>
+                    )}
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+                      >
+                        저장하기
+                      </button>
+                    </div>
+                  </form>
+                </Card>
+
+                <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.35s' }}>
+                  <form onSubmit={handleNotificationSubmit} className="p-8 space-y-6">
+                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+                      <span>🔔</span> 알림 설정
+                    </h2>
+                    <div className="space-y-4">
+                      {[
+                        { key: 'new_announcement', label: '새로운 공고 알림', icon: '📢' },
+                        { key: 'auto_apply_complete', label: '자동 신청 완료 알림', icon: '✅' },
+                        { key: 'dday', label: 'D-day 알림', icon: '⏰' },
+                        { key: 'result', label: '경쟁률 및 결과 알림', icon: '📊' },
+                      ].map((item) => (
+                        <label
+                          key={item.key}
+                          className="flex items-center justify-between p-5 bg-white rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{item.icon}</span>
+                            <span className="text-gray-900 font-semibold">{item.label}</span>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={notificationForm[item.key as keyof NotificationFormState]}
+                            onChange={handleNotificationToggle(item.key as keyof NotificationFormState)}
+                            className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                    {notificationStatus && (
+                      <p
+                        className={`rounded-xl border px-4 py-3 text-sm ${
+                          notificationStatus.type === 'error'
+                            ? 'border-red-200 bg-red-50 text-red-700'
+                            : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        }`}
+                      >
+                        {notificationStatus.message}
+                      </p>
+                    )}
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+                      >
+                        저장하기
+                      </button>
+                    </div>
+                  </form>
+                </Card>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }

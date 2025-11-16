@@ -12,24 +12,5 @@ export const apiClient = axios.create({
   timeout: 10000,
 });
 
-// 요청 인터셉터
-apiClient.interceptors.request.use(
-  (config) => {
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// 응답 인터셉터 (에러 처리)
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // 에러 처리 로직
-    return Promise.reject(error);
-  }
-);
-
 export default apiClient;
 
