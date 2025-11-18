@@ -20,8 +20,8 @@ async function fetchAnnouncementDetail(id: string): Promise<AnnouncementDetail> 
   return res.json();
 }
 
-export default async function AnnouncementDetailPage({ params }: { params: { id: string } }) {
-  const announcement = await fetchAnnouncementDetail(params.id);
+export default async function AnnouncementDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const announcement = await fetchAnnouncementDetail(id);
   return <AnnouncementDetailClient announcement={announcement} />;
 }
-

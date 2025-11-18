@@ -109,7 +109,7 @@ export default function Home() {
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
             청약 공고를 한눈에
           </h1>
-          <p className="text-gray-600 text-lg">맞춤형 청약 공고를 찾아보세요</p>
+          <p className="text-gray-900 text-lg">맞춤형 청약 공고를 찾아보세요</p>
         </div>
 
         {/* 필터 섹션 */}
@@ -119,7 +119,7 @@ export default function Home() {
               {/* 검색 바 */}
               <div className="flex-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
@@ -128,7 +128,7 @@ export default function Home() {
                   placeholder="공고명 또는 지역으로 검색..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
                 />
               </div>
 
@@ -139,7 +139,7 @@ export default function Home() {
                   <select
                     value={selectedRegion}
                     onChange={(e) => setSelectedRegion(e.target.value)}
-                    className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white appearance-none cursor-pointer transition-all min-w-[140px]"
+                    className="px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white appearance-none cursor-pointer transition-all min-w-[140px]"
                   >
                     {regions.map((region) => (
                       <option key={region} value={region === '전체' ? '' : region}>
@@ -148,7 +148,7 @@ export default function Home() {
                     ))}
                   </select>
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
@@ -159,7 +159,7 @@ export default function Home() {
                   <select
                     value={selectedHousingType}
                     onChange={(e) => setSelectedHousingType(e.target.value)}
-                    className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white appearance-none cursor-pointer transition-all min-w-[120px]"
+                    className="px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white appearance-none cursor-pointer transition-all min-w-[120px]"
                   >
                     {housingTypes.map((type) => (
                       <option key={type} value={type === '전체' ? '' : type}>
@@ -168,7 +168,7 @@ export default function Home() {
                     ))}
                   </select>
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
@@ -179,7 +179,7 @@ export default function Home() {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
-                    className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white appearance-none cursor-pointer transition-all min-w-[130px]"
+                    className="px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 bg-white appearance-none cursor-pointer transition-all min-w-[130px]"
                   >
                     <option value="latest">최신순</option>
                     <option value="dday">마감 임박순</option>
@@ -187,7 +187,7 @@ export default function Home() {
                     <option value="rent">월 임대료 낮은순</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
@@ -197,14 +197,14 @@ export default function Home() {
 
             {/* 자주 검색하는 키워드 */}
             <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-200">
-              <span className="text-sm text-gray-600 font-medium flex items-center gap-1">
+              <span className="text-sm text-gray-900 font-medium flex items-center gap-1">
                 <span>🔥</span> 자주 검색:
               </span>
               {['강남구', '행복주택', '국민임대', '서울'].map((keyword) => (
                 <button
                   key={keyword}
                   onClick={() => setSearchQuery(keyword)}
-                  className="px-3 py-1.5 text-sm bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 rounded-full hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600 hover:shadow-md transition-all duration-200 font-medium border border-gray-200/50 hover:border-blue-200"
+                  className="px-3 py-1.5 text-sm bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 rounded-full hover:from-blue-50 hover:to-indigo-50 hover:text-blue-600 hover:shadow-md transition-all duration-200 font-medium border border-gray-200/50 hover:border-blue-200"
                 >
                   {keyword}
                 </button>
@@ -215,7 +215,7 @@ export default function Home() {
 
         {/* 로딩 / 에러 상태 */}
         {loading && (
-          <div className="py-16 text-center text-gray-500 animate-pulse">
+          <div className="py-16 text-center text-gray-900 animate-pulse">
             공고를 불러오는 중입니다...
           </div>
         )}
@@ -265,7 +265,7 @@ export default function Home() {
                       {announcement.title}
                     </h3>
 
-                    <div className="flex items-center gap-1.5 mb-5 text-sm text-gray-600">
+                    <div className="flex items-center gap-1.5 mb-5 text-sm text-gray-900">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -275,7 +275,7 @@ export default function Home() {
 
                     <div className="space-y-3 mb-5 p-4 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-xl border border-blue-100/50">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 flex items-center gap-1">
+                        <span className="text-sm text-gray-900 flex items-center gap-1">
                           💰 보증금
                         </span>
                         <span className="font-bold text-gray-900 text-sm">
@@ -289,7 +289,7 @@ export default function Home() {
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 flex items-center gap-1">
+                        <span className="text-sm text-gray-900 flex items-center gap-1">
                           💵 월 임대료
                         </span>
                         <span className="font-bold text-gray-900 text-sm">
@@ -302,10 +302,10 @@ export default function Home() {
 
                     <div className="pt-4 border-t border-gray-200 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-900">
                           마감일: {announcement.application_end_date?.slice(0, 10) ?? '미정'}
                         </p>
                       </div>
@@ -325,7 +325,7 @@ export default function Home() {
 
         {!loading && !error && filteredAnnouncements.length === 0 && (
           <Card className="mt-12">
-            <div className="p-12 text-center text-gray-500">
+            <div className="p-12 text-center text-gray-900">
               조건에 맞는 공고가 없습니다.
             </div>
           </Card>

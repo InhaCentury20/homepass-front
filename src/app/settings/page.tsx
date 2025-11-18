@@ -372,14 +372,14 @@ export default function SettingsPage() {
                   <span>👤</span> 프로필 요약
                 </h2>
                 {user ? (
-                  <div className="space-y-2 text-sm text-gray-700">
+                  <div className="space-y-2 text-sm text-gray-900">
                     <p><span className="font-semibold">이름:</span> {user.name}</p>
                     <p><span className="font-semibold">이메일:</span> {user.email}</p>
                     <p><span className="font-semibold">전화번호:</span> {user.phone_number ?? '미등록'}</p>
                     <p><span className="font-semibold">주소:</span> {user.address ?? '미등록'}</p>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">사용자 정보를 불러오는 중입니다.</p>
+                  <p className="text-sm text-gray-900">사용자 정보를 불러오는 중입니다.</p>
                 )}
                 {profileError && (
                   <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
@@ -388,7 +388,7 @@ export default function SettingsPage() {
                 )}
                 <button
                   onClick={loadProfile}
-                  className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all disabled:opacity-60"
+                  className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                   disabled={profileLoading}
                 >
                   프로필 새로고침
@@ -397,7 +397,7 @@ export default function SettingsPage() {
             </Card>
 
             <Card gradient className="shadow-lg animate-fade-in" style={{ animationDelay: '0.15s' }}>
-              <div className="p-6 space-y-2 text-sm text-gray-600">
+              <div className="p-6 space-y-2 text-sm text-gray-900">
                 <p>• 각 섹션에서 개인정보, 청약 정보, 희망 조건, 알림 설정을 수정하면 바로 저장됩니다.</p>
                 <p>• 저장 완료 후에는 자동으로 최신 정보를 다시 불러옵니다.</p>
                 <p>• 이미지 URL 등 공고 관련 리소스는 S3 주소를 MySQL에 저장하여 제공합니다.</p>
@@ -410,7 +410,7 @@ export default function SettingsPage() {
               <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 <div className="p-10 text-center space-y-4">
                   <h2 className="text-2xl font-semibold text-gray-900">사용자 정보를 불러오는 중입니다</h2>
-                  <p className="text-gray-600">잠시만 기다려주세요.</p>
+                  <p className="text-gray-900">잠시만 기다려주세요.</p>
                 </div>
               </Card>
             ) : (
@@ -419,60 +419,60 @@ export default function SettingsPage() {
                   <form onSubmit={handlePersonalSubmit} className="p-8 space-y-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h2 className="text-2xl font-bold mb-1 flex items-center gap-3">
+                        <h2 className="text-2xl font-bold mb-1 flex items-center gap-3 text-gray-900">
                           <span>👤</span> 개인 정보
                         </h2>
-                        <p className="text-sm text-gray-500">이메일을 변경하면 이후 로그인할 때 새 이메일을 사용하세요.</p>
+                        <p className="text-sm text-gray-900">이메일을 변경하면 이후 로그인할 때 새 이메일을 사용하세요.</p>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">이메일</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">이메일</label>
                         <input
                           type="email"
                           value={personalForm.email}
                           onChange={handlePersonalInputChange('email')}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">비밀번호 변경</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">비밀번호 변경</label>
                         <input
                           type="password"
                           value={personalForm.password}
                           placeholder="변경 시에만 입력하세요"
                           onChange={handlePersonalInputChange('password')}
                           minLength={8}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">이름</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">이름</label>
                         <input
                           type="text"
                           value={personalForm.name}
                           onChange={handlePersonalInputChange('name')}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">전화번호</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">전화번호</label>
                         <input
                           type="tel"
                           value={personalForm.phone_number}
                           onChange={handlePersonalInputChange('phone_number')}
                           placeholder="010-0000-0000"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">주소</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">주소</label>
                         <input
                           type="text"
                           value={personalForm.address}
                           onChange={handlePersonalInputChange('address')}
                           placeholder="예: 서울특별시 중구 세종대로 110"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                     </div>
@@ -483,6 +483,8 @@ export default function SettingsPage() {
                             ? 'border-red-200 bg-red-50 text-red-700'
                             : 'border-emerald-200 bg-emerald-50 text-emerald-700'
                         }`}
+                        role="status"
+                        aria-live="polite"
                       >
                         {personalStatus.message}
                       </p>
@@ -490,7 +492,7 @@ export default function SettingsPage() {
                     <div className="flex justify-end">
                       <button
                         type="submit"
-                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                       >
                         저장하기
                       </button>
@@ -500,35 +502,35 @@ export default function SettingsPage() {
 
                 <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.25s' }}>
                   <form onSubmit={handleSubscriptionSubmit} className="p-8 space-y-6">
-                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-3 text-gray-900">
                       <span>🏦</span> 청약 정보
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">가입 은행</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">가입 은행</label>
                         <input
                           type="text"
                           value={subscriptionForm.bank_name}
                           onChange={handleSubscriptionInputChange('bank_name')}
                           placeholder="예: KB국민은행"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">가입일</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">가입일</label>
                         <input
                           type="date"
                           value={subscriptionForm.join_date}
                           onChange={handleSubscriptionInputChange('join_date')}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">세대주 여부</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">세대주 여부</label>
                         <select
                           value={subscriptionForm.is_household_head}
                           onChange={handleSubscriptionInputChange('is_household_head')}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all bg-white"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all bg-white"
                         >
                           <option value="">선택하세요</option>
                           <option value="yes">예</option>
@@ -536,32 +538,32 @@ export default function SettingsPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">납입 인정 횟수</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">납입 인정 횟수</label>
                         <input
                           type="number"
                           value={subscriptionForm.payment_count}
                           onChange={handleSubscriptionInputChange('payment_count')}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">총 납입 금액 (원)</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">총 납입 금액 (원)</label>
                         <input
                           type="number"
                           value={subscriptionForm.total_payment_amount}
                           onChange={handleSubscriptionInputChange('total_payment_amount')}
                           placeholder="예: 2400000"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">소득 분위(%)</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">소득 분위(%)</label>
                         <input
                           type="number"
                           value={subscriptionForm.income_level_percent}
                           onChange={handleSubscriptionInputChange('income_level_percent')}
                           placeholder="예: 80"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                     </div>
@@ -572,6 +574,8 @@ export default function SettingsPage() {
                             ? 'border-red-200 bg-red-50 text-red-700'
                             : 'border-emerald-200 bg-emerald-50 text-emerald-700'
                         }`}
+                        role="status"
+                        aria-live="polite"
                       >
                         {subscriptionStatus.message}
                       </p>
@@ -579,7 +583,7 @@ export default function SettingsPage() {
                     <div className="flex justify-end">
                       <button
                         type="submit"
-                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                       >
                         저장하기
                       </button>
@@ -589,12 +593,12 @@ export default function SettingsPage() {
 
                 <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.3s' }}>
                   <form onSubmit={handlePreferenceSubmit} className="p-8 space-y-6">
-                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-3 text-gray-900">
                       <span>⭐</span> 희망 조건 및 자동 신청
                     </h2>
                     <div className="space-y-6">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">
                           희망 지역 (쉼표로 구분)
                         </label>
                         <input
@@ -602,11 +606,11 @@ export default function SettingsPage() {
                           value={preferenceForm.locationsText}
                           onChange={handlePreferenceInputChange('locationsText')}
                           placeholder="예: 서울특별시 강남구, 경기도 성남시"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">
                           희망 주택 유형 (쉼표로 구분)
                         </label>
                         <input
@@ -614,72 +618,72 @@ export default function SettingsPage() {
                           value={preferenceForm.housingTypesText}
                           onChange={handlePreferenceInputChange('housingTypesText')}
                           placeholder="예: 행복주택, 공공임대"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">최소 면적 (m²)</label>
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">최소 면적 (m²)</label>
                           <input
                             type="number"
                             value={preferenceForm.min_area}
                             onChange={handlePreferenceInputChange('min_area')}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">최대 면적 (m²)</label>
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">최대 면적 (m²)</label>
                           <input
                             type="number"
                             value={preferenceForm.max_area}
                             onChange={handlePreferenceInputChange('max_area')}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">최대 보증금 (원)</label>
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">최대 보증금 (원)</label>
                           <input
                             type="number"
                             value={preferenceForm.max_deposit}
                             onChange={handlePreferenceInputChange('max_deposit')}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">최대 월 임대료 (만원)</label>
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">최대 월 임대료 (만원)</label>
                           <input
                             type="number"
                             value={preferenceForm.max_monthly_rent}
                             onChange={handlePreferenceInputChange('max_monthly_rent')}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                           />
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">출퇴근 기준 주소</label>
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">출퇴근 기준 주소</label>
                           <input
                             type="text"
                             value={preferenceForm.commute_base_address}
                             onChange={handlePreferenceInputChange('commute_base_address')}
                             placeholder="예: 서울특별시 강남구"
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          <label className="block text-sm font-semibold text-gray-900 mb-2">
                             최대 출퇴근 시간 (분)
                           </label>
                           <input
                             type="number"
                             value={preferenceForm.max_commute_time_minutes}
                             onChange={handlePreferenceInputChange('max_commute_time_minutes')}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 transition-all"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">자동 신청 모드</label>
+                        <label className="block text-sm font-semibold text-gray-900 mb-2">자동 신청 모드</label>
                         <div className="flex flex-wrap gap-3">
                           {[
                             { id: 'full_auto', label: '완전 자동', icon: '🤖' },
@@ -716,6 +720,8 @@ export default function SettingsPage() {
                             ? 'border-red-200 bg-red-50 text-red-700'
                             : 'border-emerald-200 bg-emerald-50 text-emerald-700'
                         }`}
+                        role="status"
+                        aria-live="polite"
                       >
                         {preferenceStatus.message}
                       </p>
@@ -723,7 +729,7 @@ export default function SettingsPage() {
                     <div className="flex justify-end">
                       <button
                         type="submit"
-                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                       >
                         저장하기
                       </button>
@@ -733,7 +739,7 @@ export default function SettingsPage() {
 
                 <Card gradient className="shadow-xl animate-fade-in" style={{ animationDelay: '0.35s' }}>
                   <form onSubmit={handleNotificationSubmit} className="p-8 space-y-6">
-                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-3 text-gray-900">
                       <span>🔔</span> 알림 설정
                     </h2>
                     <div className="space-y-4">
@@ -755,7 +761,7 @@ export default function SettingsPage() {
                             type="checkbox"
                             checked={notificationForm[item.key as keyof NotificationFormState]}
                             onChange={handleNotificationToggle(item.key as keyof NotificationFormState)}
-                            className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                           />
                         </label>
                       ))}
@@ -767,6 +773,8 @@ export default function SettingsPage() {
                             ? 'border-red-200 bg-red-50 text-red-700'
                             : 'border-emerald-200 bg-emerald-50 text-emerald-700'
                         }`}
+                        role="status"
+                        aria-live="polite"
                       >
                         {notificationStatus.message}
                       </p>
@@ -774,7 +782,7 @@ export default function SettingsPage() {
                     <div className="flex justify-end">
                       <button
                         type="submit"
-                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all"
+                        className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                       >
                         저장하기
                       </button>

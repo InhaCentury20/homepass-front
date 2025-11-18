@@ -112,7 +112,7 @@ function InfoSection({ announcement }: { announcement: AnnouncementDetail }) {
     <div className="space-y-6">
       <Card className="overflow-hidden shadow-lg">
         <div className="p-4">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-900">
             <span>🖼️</span> 이미지 갤러리
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -135,7 +135,7 @@ function InfoSection({ announcement }: { announcement: AnnouncementDetail }) {
 
       <Card gradient className="shadow-lg">
         <div className="p-6 space-y-4">
-          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
+          <h2 className="text-2xl font-bold mb-2 flex items-center gap-2 text-gray-900">
             <span>📊</span> 신청 자격 및 모집 정보
           </h2>
           <InfoRow
@@ -175,7 +175,7 @@ function InfoSection({ announcement }: { announcement: AnnouncementDetail }) {
 
       <Card gradient className="shadow-lg">
         <div className="p-6">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-900">
             <span>📅</span> 주요 일정
           </h2>
           <div className="space-y-3">
