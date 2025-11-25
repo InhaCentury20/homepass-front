@@ -21,6 +21,7 @@ export default function Home() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPast, setShowPast] = useState(false);
 
   // 내 관심 공고 목록 불러오기 (하트 초기 상태 반영)
   const { data: myBookmarks } = useQuery<Announcement[]>({
@@ -99,6 +100,19 @@ export default function Home() {
       result = result.filter(
         (announcement) => announcement.housing_type === selectedHousingType,
       );
+    }
+
+    if (!showPast) {
+      const now = new Date();
+      result = result.filter((a) => {
+        if (a.dday !== undefined && a.dday !== null) {
+          return a.dday >= 0;
+        }
+        if (a.application_end_date) {
+          return new Date(a.application_end_date) >= now;
+        }
+        return true;
+      });
     }
 
     result.sort((a, b) => {
@@ -212,6 +226,25 @@ export default function Home() {
                     </svg>
                   </div>
                 </div>
+
+                {/* 지난 공고 포함 토글 */}
+                <div className="flex items-center gap-2 px-2">
+                  <span className="text-sm text-gray-900">지난 공고 포함</span>
+                  <button
+                    onClick={() => setShowPast((v) => !v)}
+                    className={`w-10 h-6 rounded-full relative transition-colors ${
+                      showPast ? 'bg-blue-600' : 'bg-gray-300'
+                    }`}
+                    aria-pressed={showPast}
+                    aria-label="지난 공고 포함 토글"
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                        showPast ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -306,11 +339,11 @@ export default function Home() {
                           💰 보증금
                         </span>
                         <span className="font-bold text-gray-900 text-sm">
-                          {announcement.min_deposit !== undefined
+                          {announcement.min_deposit !== undefined && announcement.min_deposit !== null
                             ? `${announcement.min_deposit.toLocaleString()}만원`
                             : '정보 없음'}
                           {' ~ '}
-                          {announcement.max_deposit !== undefined
+                          {announcement.max_deposit !== undefined && announcement.max_deposit !== null
                             ? `${announcement.max_deposit.toLocaleString()}만원`
                             : '정보 없음'}
                         </span>
@@ -320,7 +353,7 @@ export default function Home() {
                           💵 월 임대료
                         </span>
                         <span className="font-bold text-gray-900 text-sm">
-                          {announcement.monthly_rent !== undefined
+                          {announcement.monthly_rent !== undefined && announcement.monthly_rent !== null
                             ? `${announcement.monthly_rent.toLocaleString()}만원`
                             : '정보 없음'}
                         </span>

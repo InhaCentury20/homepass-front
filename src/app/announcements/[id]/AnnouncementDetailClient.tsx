@@ -158,7 +158,10 @@ function InfoSection({ announcement }: { announcement: AnnouncementDetail }) {
           <InfoRow
             label="보증금"
             value={
-              announcement.min_deposit !== undefined && announcement.max_deposit !== undefined
+              announcement.min_deposit !== undefined &&
+              announcement.min_deposit !== null &&
+              announcement.max_deposit !== undefined &&
+              announcement.max_deposit !== null
                 ? `${announcement.min_deposit.toLocaleString()}만원 ~ ${announcement.max_deposit.toLocaleString()}만원`
                 : '정보 없음'
             }
@@ -167,7 +170,7 @@ function InfoSection({ announcement }: { announcement: AnnouncementDetail }) {
           <InfoRow
             label="월 임대료"
             value={
-              announcement.monthly_rent !== undefined
+              announcement.monthly_rent !== undefined && announcement.monthly_rent !== null
                 ? `${announcement.monthly_rent.toLocaleString()}만원`
                 : '정보 없음'
             }
