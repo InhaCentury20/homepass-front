@@ -12,6 +12,7 @@ export default function Header() {
     { href: '/', label: '공고 목록', icon: '📋' },
     { href: '/applications', label: '신청 내역', icon: '📝' },
     { href: '/notifications', label: '알림', icon: '🔔' },
+    { href: '/my/bookmarks', label: '관심 공고', icon: '❤️' },
     { href: '/settings', label: '설정', icon: '⚙️' },
   ];
 

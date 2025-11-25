@@ -2,10 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import axios from 'axios';
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
 import { getAnnouncements } from '@/lib/api/announcements';
 import type { Announcement } from '@/types/api';
+import BookmarkButton from '@/components/common/BookmarkButton';
+import { useQuery } from '@tanstack/react-query';
+import { getMyBookmarks } from '@/lib/api/bookmarks';
 
 type SortOption = 'latest' | 'dday' | 'deposit' | 'rent';
 
@@ -18,14 +22,27 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // 내 관심 공고 목록 불러오기 (하트 초기 상태 반영)
+  const { data: myBookmarks } = useQuery<Announcement[]>({
+    queryKey: ['bookmarks', 'me'],
+    queryFn: getMyBookmarks,
+    staleTime: 30_000,
+  });
+  const bookmarkedIds = useMemo(() => new Set((myBookmarks ?? []).map((a) => a.announcement_id)), [myBookmarks]);
+
   useEffect(() => {
+    const controller = new AbortController();
     const fetchData = async () => {
       setLoading(true);
       setError('');
       try {
-        const response = await getAnnouncements({ size: 50 });
+        const response = await getAnnouncements({ size: 50 }, { signal: controller.signal });
         setAnnouncements(response.items);
-      } catch (err) {
+      } catch (err: any) {
+        // 요청 취소는 오류로 처리하지 않음
+        if (axios.isCancel?.(err) || err?.name === 'CanceledError' || err?.code === 'ERR_CANCELED') {
+          return;
+        }
         console.error(err);
         setError('공고 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
       } finally {
@@ -34,6 +51,9 @@ export default function Home() {
     };
 
     fetchData();
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const regions = useMemo(() => {
@@ -240,7 +260,14 @@ export default function Home() {
                     <div className="h-1.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400"></div>
                   )}
 
-                  <div className="p-6">
+                  <div className="p-6 relative">
+                    <div className="absolute top-4 right-4 z-10">
+                      <BookmarkButton
+                        announcementId={announcement.announcement_id}
+                        initialIsBookmarked={bookmarkedIds.has(announcement.announcement_id)}
+                        size={22}
+                      />
+                    </div>
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex flex-wrap gap-2">
                         {announcement.is_customized && (

@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
-import type { AnnouncementDetail } from '@/types/api';
+import type { Announcement, AnnouncementDetail } from '@/types/api';
+import BookmarkButton from '@/components/common/BookmarkButton';
+import { getMyBookmarks } from '@/lib/api/bookmarks';
 
 type TabType = 'info' | 'commute' | 'qa';
 
@@ -319,6 +322,13 @@ function Sidebar({ announcement }: { announcement: AnnouncementDetail }) {
     announcement.min_deposit !== undefined && announcement.max_deposit !== undefined
       ? Math.round((announcement.min_deposit + announcement.max_deposit) / 2)
       : undefined;
+  const { data: myBookmarks } = useQuery<Announcement[]>({
+    queryKey: ['bookmarks', 'me'],
+    queryFn: getMyBookmarks,
+    staleTime: 30_000,
+  });
+  const isInitiallyBookmarked =
+    (myBookmarks ?? []).some((a) => a.announcement_id === announcement.announcement_id);
 
   return (
     <div className="space-y-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
@@ -367,9 +377,13 @@ function Sidebar({ announcement }: { announcement: AnnouncementDetail }) {
           <button className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200">
             ✨ 신청하기
           </button>
-          <button className="w-full px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl font-semibold hover:from-gray-200 hover:to-gray-300 shadow-md hover:shadow-lg transition-all duration-200">
-            ⭐ 관심 공고로 저장
-          </button>
+          <div className="w-full flex justify-center">
+            <BookmarkButton
+              announcementId={announcement.announcement_id}
+              initialIsBookmarked={isInitiallyBookmarked}
+              size={28}
+            />
+          </div>
         </div>
       </Card>
     </div>

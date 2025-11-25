@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Card from '@/components/common/Card';
 import Badge from '@/components/common/Badge';
-import { getNotifications, markNotificationsAsRead } from '@/lib/api/notifications';
+import { getNotifications, markNotificationsAsRead, markNotificationAsRead } from '@/lib/api/notifications';
 import type { NotificationItem } from '@/types/api';
 
 const badgeByCategory: Record<string, { variant: 'info' | 'success' | 'warning' | 'danger'; icon: string; label: string }> = {
@@ -25,8 +25,13 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showRead, setShowRead] = useState(false);
 
   const unreadCount = useMemo(() => notifications.filter((item) => !item.is_read).length, [notifications]);
+  const visibleNotifications = useMemo(
+    () => (showRead ? notifications : notifications.filter((item) => !item.is_read)),
+    [notifications, showRead],
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +59,20 @@ export default function NotificationsPage() {
       console.error(err);
     }
   };
+  const handleMarkOneRead = async (notificationId: number) => {
+    // 낙관적 업데이트
+    const previous = notifications;
+    setNotifications((prev) =>
+      prev.map((n) => (n.notification_id === notificationId ? { ...n, is_read: true } : n)),
+    );
+    try {
+      await markNotificationAsRead(notificationId);
+    } catch (err) {
+      console.error(err);
+      // 롤백
+      setNotifications(previous);
+    }
+  };
 
   const formatDateTime = (value?: string) => {
     if (!value) return '방금';
@@ -63,21 +82,40 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex items-center justify-between animate-fade-in">
-          <div>
+        <div className="mb-8 flex items-center justify-between gap-4 animate-fade-in">
+          <div className="min-w-0">
             <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               알림
             </h1>
             <p className="text-gray-600">새로운 소식을 확인하세요</p>
           </div>
-          {unreadCount > 0 && (
-            <div className="relative">
-              <span className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full text-sm font-semibold shadow-lg animate-pulse">
-                읽지 않은 알림 {unreadCount}개
-              </span>
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white animate-bounce"></span>
+          <div className="flex items-center gap-3">
+            {unreadCount > 0 && (
+              <div className="relative">
+                <span className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full text-sm font-semibold shadow-lg animate-pulse">
+                  읽지 않은 알림 {unreadCount}개
+                </span>
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white animate-bounce"></span>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700">읽은 알림 포함</span>
+              <button
+                onClick={() => setShowRead((v) => !v)}
+                className={`w-10 h-6 rounded-full relative transition-colors ${
+                  showRead ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
+                aria-pressed={showRead}
+                aria-label="읽은 알림 포함 토글"
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                    showRead ? 'translate-x-4' : 'translate-x-0'
+                  }`}
+                />
+              </button>
             </div>
-          )}
+          </div>
         </div>
 
         {loading && (
@@ -93,7 +131,7 @@ export default function NotificationsPage() {
         {!loading && !error && (
           <>
             <div className="space-y-4">
-              {notifications.map((notification, idx) => {
+              {visibleNotifications.map((notification, idx) => {
                 const badgeInfo = badgeByCategory[notification.category];
                 const leadingIcon = iconByCategory[notification.category] ?? '🔔';
 
@@ -102,14 +140,18 @@ export default function NotificationsPage() {
                     key={notification.notification_id}
                     hover={!notification.is_read}
                     gradient={!notification.is_read}
-                    className={`animate-fade-in ${notification.is_read ? 'opacity-75' : 'border-l-4 border-l-blue-500'}`}
+                    className={`animate-fade-in ${
+                      notification.is_read ? 'opacity-75' : 'border-l-4 border-l-blue-500'
+                    }`}
                     style={{ animationDelay: `${idx * 0.1}s` }}
                   >
                     <div className="p-6">
                       <div className="flex items-start gap-4">
                         <div
                           className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 ${
-                            notification.is_read ? 'bg-gray-100' : 'bg-gradient-to-br from-blue-100 to-indigo-100 animate-pulse'
+                            notification.is_read
+                              ? 'bg-gray-100'
+                              : 'bg-gradient-to-br from-blue-100 to-indigo-100 animate-pulse'
                           }`}
                         >
                           {leadingIcon}
@@ -152,7 +194,7 @@ export default function NotificationsPage() {
                             )}
                             {!notification.is_read && (
                               <button
-                                onClick={handleMarkAllRead}
+                                onClick={() => handleMarkOneRead(notification.notification_id)}
                                 className="px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 hover:shadow-md transition-all duration-200"
                               >
                                 읽음 처리
@@ -167,7 +209,7 @@ export default function NotificationsPage() {
               })}
             </div>
 
-            {notifications.length === 0 && (
+            {(showRead ? notifications.length === 0 : visibleNotifications.length === 0) && (
               <Card className="animate-fade-in mt-8">
                 <div className="p-16 text-center">
                   <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">

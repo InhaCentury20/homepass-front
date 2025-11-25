@@ -15,9 +15,11 @@ export interface AnnouncementQueryParams {
 
 export const getAnnouncements = async (
   params: AnnouncementQueryParams = {},
+  options?: { signal?: AbortSignal },
 ): Promise<AnnouncementListResponse> => {
   const { data } = await apiClient.get<AnnouncementListResponse>(API_ENDPOINTS.ANNOUNCEMENTS.LIST, {
     params,
+    signal: options?.signal,
   });
   return data;
 };
