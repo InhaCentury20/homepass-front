@@ -37,11 +37,25 @@ export default function Home() {
       setLoading(true);
       setError('');
       try {
-        const response = await getAnnouncements({ size: 50 }, { signal: controller.signal });
+        const response = await getAnnouncements(
+          {
+            size: 50,
+            exclude_past: !showPast,
+            within_days: !showPast ? 30 : undefined,
+            order_by: 'post_date',
+            order: 'desc',
+          },
+          { signal: controller.signal },
+        );
         setAnnouncements(response.items);
       } catch (err: any) {
         // 요청 취소는 오류로 처리하지 않음
-        if (axios.isCancel?.(err) || err?.name === 'CanceledError' || err?.code === 'ERR_CANCELED') {
+        const isCanceled =
+          axios.isCancel?.(err) ||
+          err?.name === 'CanceledError' ||
+          err?.code === 'ERR_CANCELED' ||
+          err?.message?.includes?.('aborted without reason');
+        if (isCanceled) {
           return;
         }
         console.error(err);
@@ -55,7 +69,7 @@ export default function Home() {
     return () => {
       controller.abort();
     };
-  }, []);
+  }, [showPast]);
 
   const regions = useMemo(() => {
     const uniqueRegions = new Set<string>();
@@ -104,14 +118,19 @@ export default function Home() {
 
     if (!showPast) {
       const now = new Date();
+      const oneMonthLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       result = result.filter((a) => {
+        // dday가 있으면 0~30일 사이만 표시
         if (a.dday !== undefined && a.dday !== null) {
-          return a.dday >= 0;
+          return a.dday >= 0 && a.dday <= 30;
         }
+        // 아니면 application_end_date가 오늘~30일 이내만 표시
         if (a.application_end_date) {
-          return new Date(a.application_end_date) >= now;
+          const end = new Date(a.application_end_date);
+          return end >= now && end <= oneMonthLater;
         }
-        return true;
+        // 판단 불가 데이터는 기본 제외
+        return false;
       });
     }
 
@@ -125,10 +144,10 @@ export default function Home() {
           return (a.monthly_rent ?? Infinity) - (b.monthly_rent ?? Infinity);
         case 'latest':
         default:
-          return (
-            new Date(b.scraped_at ?? b.application_end_date ?? 0).getTime() -
-            new Date(a.scraped_at ?? a.application_end_date ?? 0).getTime()
-          );
+          // Post_Date 우선 정렬(내림차순), 없으면 scraped_at → application_end_date
+          const getDate = (x: any) =>
+            new Date(x?.post_date ?? x?.scraped_at ?? x?.application_end_date ?? 0).getTime();
+          return getDate(b) - getDate(a);
       }
     });
 

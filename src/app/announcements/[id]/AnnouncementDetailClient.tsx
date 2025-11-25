@@ -110,6 +110,13 @@ function InfoSection({ announcement }: { announcement: AnnouncementDetail }) {
     announcement.image_urls.length > 0
       ? announcement.image_urls
       : ['https://homepass-mock.s3.amazonaws.com/announcements/placeholder.jpg'];
+  const hasDepositRange =
+    announcement.min_deposit != null && announcement.max_deposit != null;
+  const formattedDepositRange = hasDepositRange
+    ? `${announcement.min_deposit!.toLocaleString()}만원 ~ ${announcement.max_deposit!.toLocaleString()}만원`
+    : '정보 없음';
+  const formattedMonthlyRent =
+    announcement.monthly_rent != null ? `${announcement.monthly_rent.toLocaleString()}만원` : '정보 없음';
 
   return (
     <div className="space-y-6">
@@ -157,23 +164,12 @@ function InfoSection({ announcement }: { announcement: AnnouncementDetail }) {
           />
           <InfoRow
             label="보증금"
-            value={
-              announcement.min_deposit !== undefined &&
-              announcement.min_deposit !== null &&
-              announcement.max_deposit !== undefined &&
-              announcement.max_deposit !== null
-                ? `${announcement.min_deposit.toLocaleString()}만원 ~ ${announcement.max_deposit.toLocaleString()}만원`
-                : '정보 없음'
-            }
+            value={formattedDepositRange}
             emoji="💵"
           />
           <InfoRow
             label="월 임대료"
-            value={
-              announcement.monthly_rent !== undefined && announcement.monthly_rent !== null
-                ? `${announcement.monthly_rent.toLocaleString()}만원`
-                : '정보 없음'
-            }
+            value={formattedMonthlyRent}
             emoji="📅"
           />
         </div>
@@ -321,10 +317,16 @@ function QATab() {
 }
 
 function Sidebar({ announcement }: { announcement: AnnouncementDetail }) {
-  const averageDeposit =
-    announcement.min_deposit !== undefined && announcement.max_deposit !== undefined
-      ? Math.round((announcement.min_deposit + announcement.max_deposit) / 2)
-      : undefined;
+  const hasDepositRange =
+    announcement.min_deposit != null && announcement.max_deposit != null;
+  const averageDeposit = hasDepositRange
+    ? Math.round((announcement.min_deposit! + announcement.max_deposit!) / 2)
+    : undefined;
+  const formattedDepositRange = hasDepositRange
+    ? `${announcement.min_deposit!.toLocaleString()}만원 ~ ${announcement.max_deposit!.toLocaleString()}만원`
+    : '정보 없음';
+  const formattedMonthlyRent =
+    announcement.monthly_rent != null ? `${announcement.monthly_rent.toLocaleString()}만원` : '정보 없음';
   const { data: myBookmarks } = useQuery<Announcement[]>({
     queryKey: ['bookmarks', 'me'],
     queryFn: getMyBookmarks,
@@ -342,31 +344,21 @@ function Sidebar({ announcement }: { announcement: AnnouncementDetail }) {
           </h3>
           <InfoRow
             label="보증금"
-            value={
-              announcement.min_deposit !== undefined && announcement.max_deposit !== undefined
-                ? `${announcement.min_deposit.toLocaleString()}만원 ~ ${announcement.max_deposit.toLocaleString()}만원`
-                : '정보 없음'
-            }
+            value={formattedDepositRange}
             emoji="💵"
           />
           <InfoRow
             label="월 임대료"
-            value={
-              announcement.monthly_rent !== undefined
-                ? `${announcement.monthly_rent.toLocaleString()}만원`
-                : '정보 없음'
-            }
+            value={formattedMonthlyRent}
             emoji="📅"
           />
           <div className="pt-4 border-t border-gray-200">
             <p className="text-sm text-gray-500 mb-2 font-medium">예상 평균 금액</p>
             <div className="p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl border border-purple-200 text-center">
               <p className="text-xl font-bold text-purple-700">
-                {averageDeposit !== undefined
-                  ? `보증금 ${averageDeposit.toLocaleString()}만원`
-                  : '보증금 정보 없음'}
+                {averageDeposit !== undefined ? `보증금 ${averageDeposit.toLocaleString()}만원` : '보증금 정보 없음'}
                 <br />
-                {announcement.monthly_rent !== undefined
+                {announcement.monthly_rent != null
                   ? `+ 월 ${announcement.monthly_rent.toLocaleString()}만원`
                   : '+ 월 임대료 정보 없음'}
               </p>

@@ -49,6 +49,7 @@ export interface Announcement {
   longitude?: number;
   application_end_date?: string;
   scraped_at?: string;
+  post_date?: string; // 게시일(백엔드 제공 시 정렬 우선 사용)
   min_deposit?: number;
   max_deposit?: number;
   monthly_rent?: number;
